@@ -1,16 +1,24 @@
 import { sanity, urlFor } from '@/lib/sanity'
 
+type Event = {
+  name: string
+  image?: {
+    _type: string
+    asset: {
+      _ref: string
+      _type: string
+    }
+  }
+}
+
 export default async function Home() {
-  const events = await sanity.fetch(`*[_type == "event"]{
-    name,
-    image
-  }`)
+  const events: Event[] = await sanity.fetch(`*[_type == "event"]{ name, image }`)
 
   return (
     <main className="p-6">
       <h1 className="text-2xl font-bold mb-4">Events</h1>
       <ul className="space-y-4">
-        {events.map((event: any, i: number) => (
+        {events.map((event, i) => (
           <li key={i} className="p-4 rounded bg-gray-100">
             <p className="font-semibold">{event.name}</p>
             {event.image && (

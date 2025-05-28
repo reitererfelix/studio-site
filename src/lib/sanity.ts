@@ -1,8 +1,9 @@
 import { createClient } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
 export const sanity = createClient({
-  projectId: 'etgmoar1',         // your real project ID
+  projectId: 'etgmoar1',
   dataset: 'production',
   apiVersion: '2023-12-01',
   useCdn: true,
@@ -10,6 +11,7 @@ export const sanity = createClient({
 
 const builder = imageUrlBuilder(sanity)
 
-export function urlFor(source: any) {
+export function urlFor(source: SanityImageSource) {
   return builder.image(source)
 }
+
