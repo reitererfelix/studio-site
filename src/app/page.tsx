@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { sanity, urlFor } from '@/lib/sanity'
 import dynamic from 'next/dynamic'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import { sanity, urlFor } from '@/lib/sanity'
 
-const ImageTrail = dynamic(() => import('../components/ImageTrail'), { ssr: false })
+const ImageTrail = dynamic(() => import('@/components/ImageTrail'), { ssr: false })
 
 export default function HomePage() {
   const [showAbout, setShowAbout] = useState(false)
@@ -12,24 +13,20 @@ export default function HomePage() {
 
   // Fetch images from Sanity
   useEffect(() => {
-  async function fetchImages() {
-    try {
-      const query = `*[_type == "event" && defined(image.asset._ref)]{ image }`
-      console.log("Running Sanity query:", query)
-      const data = await sanity.fetch(query)
-      console.log("Sanity result:", data)
-      const urls = data
-        .filter((doc: any) => doc.image?.asset?._ref)
-        .map((doc: any) => urlFor(doc.image).width(300).url())
-      setImageUrls(urls)
-    } catch (err) {
-      console.error('Failed to fetch images from Sanity:', err)
+    async function fetchImages() {
+      const query = `*[_type == "event" && defined(image)]{ image }`
+      try {
+        const data: Array<{ image: SanityImageSource }> = await sanity.fetch(query)
+        const urls = data
+          .filter((doc) => Boolean(doc.image))
+          .map((doc) => urlFor(doc.image).width(300).url()!)
+        setImageUrls(urls)
+      } catch (err) {
+        console.error('Failed to fetch images from Sanity:', err)
+      }
     }
-  }
-
-  fetchImages()
-}, [])
-
+    fetchImages()
+  }, [])
 
   return (
     <main className="relative w-screen h-screen bg-white text-[#0000ff] overflow-hidden">
@@ -38,7 +35,7 @@ export default function HomePage() {
         className={`absolute top-[12px] right-[12px] text-[14px] font-reddit cursor-pointer z-50 ${
           showAbout ? 'text-white' : 'text-[#0000ff]'
         }`}
-        onClick={() => setShowAbout(!showAbout)}
+        onClick={() => setShowAbout((v) => !v)}
       >
         {showAbout ? '[ CLOSE ]' : '[ ? ]'}
       </div>
@@ -48,7 +45,7 @@ export default function HomePage() {
         <>
           <ImageTrail images={imageUrls} />
           <div className="flex items-center justify-center w-full h-full p-[12px] pointer-events-none">
-            <h1 className="text-[64px] font-chantilly text-[#0000ff]">mulipan</h1>
+            <h1 className="text-[64px] font-chantilly">mulipan</h1>
           </div>
         </>
       )}
@@ -58,10 +55,10 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[#0000ff] text-white z-40 p-[12px]">
           {/* Centered Title */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <h1 className="text-[64px] font-chantilly text-white">mulipan</h1>
+            <h1 className="text-[64px] font-chantilly">mulipan</h1>
           </div>
 
-          {/* About Text - Top Left */}
+          {/* About Text – Top Left */}
           <div className="absolute top-[12px] left-[12px] w-1/2 text-[14px] font-reddit text-left max-w-[600px]">
             <div>[ ABOUT ]</div>
             <p>
@@ -71,8 +68,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Contact Info - Bottom Left */}
-          <div className="absolute bottom-[12px] left-[12px] text-[14px] font-reddit flex gap-x-12 text-left items-end">
+          {/* Contact Info – Bottom Left */}
+          <div className="absolute bottom-[12px] left-[12px] text-[14px] font-reddit flex gap-x-12 items-end">
             <div className="flex flex-col justify-end">
               <div>mulipan</div>
               <div>Reindorfgasse 12/4</div>
@@ -91,5 +88,5 @@ export default function HomePage() {
         </div>
       )}
     </main>
-  )
+)
 }

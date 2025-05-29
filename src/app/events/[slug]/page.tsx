@@ -1,39 +1,38 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sanity, urlFor } from '@/lib/sanity'
+import { notFound } from 'next/navigation'
+import Image from 'next/image'
 
-type Props = {
-  params: { slug: string }
-}
+// Dynamic Event Page: route = /events/[slug]
+export default async function EventPage(props: any) {
+  const slug = props.params.slug
 
-type EventType = {
-  name: string
-  images?: { asset: any }[]
-  video?: { asset: any }
-}
-
-export default async function EventPage({ params }: Props) {
-  const event: EventType = await sanity.fetch(
+  const event = await sanity.fetch(
     `*[_type == "event" && slug.current == $slug][0]`,
-    { slug: params.slug }
+    { slug }
   )
 
+  if (!event) {
+    notFound()
+  }
+
   return (
-    <main className="p-6">
-      <h1 className="text-xl mb-4">{event.name}</h1>
-
-      {event.images?.map((img, i) => (
-        <img
-          key={i}
-          src={urlFor(img).width(800).url()}
-          className="mb-4"
-          alt=""
-        />
-      ))}
-
-      {event.video && (
-        <video controls className="w-full mt-4">
-          <source src={urlFor(event.video).url()} type="video/mp4" />
-        </video>
+    <main className="flex flex-col items-center justify-center min-h-screen p-6 bg-white">
+      {/* Centered Image */}
+      {event.image && (
+        <div className="relative w-full max-w-lg mb-4">
+          <Image
+            src={urlFor(event.image).width(800).url()!}
+            alt={event.name}
+            width={800}
+            height={600}
+            className="object-contain"
+          />
+        </div>
       )}
+
+      {/* Title Below */}
+      <h1 className="text-2xl font-semibold text-center">{event.name}</h1>
     </main>
   )
 }
@@ -42,6 +41,5 @@ export async function generateStaticParams() {
   const slugs: string[] = await sanity.fetch(
     `*[_type == "event" && defined(slug.current)][].slug.current`
   )
-
   return slugs.map((slug) => ({ slug }))
 }
