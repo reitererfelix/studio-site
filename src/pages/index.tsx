@@ -1,36 +1,63 @@
+// pages/index.tsx
 import { sanity, urlFor } from '@/lib/sanity'
 
 type Event = {
+  _id: string
   name: string
-  image?: {
+  image: {
     _type: string
-    asset: {
-      _ref: string
-      _type: string
-    }
+    asset: { _ref: string; _type: string }
   }
 }
 
-export default async function Home() {
-  const events: Event[] = await sanity.fetch(`*[_type == "event"]{ name, image }`)
+type Props = {
+  events: Event[]
+}
 
+export default function Home({ events }: Props) {
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Events</h1>
-      <ul className="space-y-4">
-        {events.map((event, i) => (
-          <li key={i} className="p-4 rounded bg-gray-100">
-            <p className="font-semibold">{event.name}</p>
-            {event.image && (
+    <main className="bg-white px-[12px] py-8 text-[12px] font-reddit">
+      <div
+        className="grid justify-center gap-x-3 gap-y-12 sm:gap-x-[85px] sm:gap-y-[85px]"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          alignItems: 'start',
+        }}
+      >
+        {events.map((event, index) => {
+          const displayIndex = (events.length - index).toString().padStart(2, '0')
+
+          return (
+            <div
+              key={event._id}
+              className="group w-full max-w-[250px] mx-auto"
+            >
+              <div className="flex gap-2 mb-3 whitespace-nowrap overflow-visible">
+              <span>{displayIndex}.</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {event.name}
+              </span>
+            </div>
               <img
                 src={urlFor(event.image).width(600).url()}
                 alt={event.name}
-                className="mt-2 rounded shadow"
+                className="w-full h-auto object-contain"
               />
-            )}
-          </li>
-        ))}
-      </ul>
+            </div>
+          )
+        })}
+      </div>
     </main>
   )
+}
+
+export async function getStaticProps() {
+  const events: Event[] = await sanity.fetch(`*[_type == "event"] | order(_createdAt desc)`)
+
+  return {
+    props: {
+      events,
+    },
+    revalidate: 60, // optional: regenerate at most every 60s
+  }
 }

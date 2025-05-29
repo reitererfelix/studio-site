@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20px, 1fr)); /* Adjust as needed */
+  column-gap: calc(var(--col-gap));
+  row-gap: var(--row-gap);
+}
