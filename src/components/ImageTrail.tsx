@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 
 export type ImageTrailProps = {
   images: string[]
+  onIndexChange?: (idx: number) => void
 }
 
 function throttle(func: (e: MouseEvent) => void, delay: number): (e: MouseEvent) => void {
@@ -19,7 +19,10 @@ function throttle(func: (e: MouseEvent) => void, delay: number): (e: MouseEvent)
   }
 }
 
-export default function ImageTrail({ images }: ImageTrailProps) {
+export default function ImageTrail({
+  images,
+  onIndexChange,
+}: ImageTrailProps) {
   const [trail, setTrail] = useState<{ id: number; src: string; x: number; y: number }[]>([])
   const lastPos = useRef<{ x: number; y: number } | null>(null)
   const imageIndex = useRef(0)
@@ -40,20 +43,22 @@ export default function ImageTrail({ images }: ImageTrailProps) {
 
       if (distance > 50 && images.length) {
         lastPos.current = { x: clientX, y: clientY }
+        const idx = imageIndex.current
         const newImage = {
           id: Date.now(),
-          src: images[imageIndex.current],
+          src: images[idx],
           x: clientX - 150,
           y: clientY - 150,
         }
-        imageIndex.current = (imageIndex.current + 1) % images.length
+        onIndexChange?.(idx)
+        imageIndex.current = (idx + 1) % images.length
         setTrail((prev) => {
           const next = [...prev, newImage]
           return next.length > 7 ? next.slice(1) : next
         })
       }
     },
-    [images]
+    [images, onIndexChange]
   )
 
   useEffect(() => {

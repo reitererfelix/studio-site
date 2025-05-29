@@ -1,41 +1,52 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 import { sanity, urlFor } from '@/lib/sanity'
 
+type EventData = { slug: string; url: string }
 const ImageTrail = dynamic(() => import('@/components/ImageTrail'), { ssr: false })
 
 export default function HomePage() {
+  const router = useRouter()
   const [showAbout, setShowAbout] = useState(false)
-  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [events, setEvents] = useState<EventData[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
 
-  // Fetch images from Sanity
   useEffect(() => {
-    async function fetchImages() {
-      const query = `*[_type == "event" && defined(image)]{ image }`
-      try {
-        const data: Array<{ image: SanityImageSource }> = await sanity.fetch(query)
-        const urls = data
-          .filter((doc) => Boolean(doc.image))
-          .map((doc) => urlFor(doc.image).width(300).url()!)
-        setImageUrls(urls)
-      } catch (err) {
-        console.error('Failed to fetch images from Sanity:', err)
-      }
+    async function fetchEvents() {
+      const query = `*[_type == "event" && defined(image) && defined(slug.current)]{ "slug": slug.current, image }`
+      const data: Array<{ slug: string; image: SanityImageSource }> = await sanity.fetch(query)
+      const mapped = data.map((doc) => ({
+        slug: doc.slug,
+        url: urlFor(doc.image).width(300).url()!,
+      }))
+      setEvents(mapped)
     }
-    fetchImages()
+    fetchEvents()
   }, [])
+
+  // Clicking the main layer navigates to the current event slug
+  const handleMainClick = () => {
+    const event = events[currentIndex]
+    if (event) {
+      router.push(`/events/${event.slug}`)
+    }
+  }
 
   return (
     <main className="relative w-screen h-screen bg-white text-[#0000ff] overflow-hidden">
       {/* Toggle Button */}
       <div
+        onClick={(e) => {
+          e.stopPropagation()
+          setShowAbout((v) => !v)
+        }}
         className={`absolute top-[12px] right-[12px] text-[14px] font-reddit cursor-pointer z-50 ${
           showAbout ? 'text-white' : 'text-[#0000ff]'
         }`}
-        onClick={() => setShowAbout((v) => !v)}
       >
         {showAbout ? '[ CLOSE ]' : '[ ? ]'}
       </div>
@@ -43,8 +54,14 @@ export default function HomePage() {
       {/* Main Layer */}
       {!showAbout && (
         <>
-          <ImageTrail images={imageUrls} />
-          <div className="flex items-center justify-center w-full h-full p-[12px] pointer-events-none">
+          <ImageTrail
+            images={events.map((e) => e.url)}
+            onIndexChange={setCurrentIndex}
+          />
+          <div
+            onClick={handleMainClick}
+            className="flex items-center justify-center w-full h-full p-[12px] cursor-pointer"
+          >
             <h1 className="text-[64px] font-chantilly">mulipan</h1>
           </div>
         </>
