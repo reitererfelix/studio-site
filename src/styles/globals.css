@@ -25,9 +25,30 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.custom-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20px, 1fr)); /* Adjust as needed */
-  column-gap: calc(var(--col-gap));
-  row-gap: var(--row-gap);
+@font-face {
+  font-family: 'Chantilly Heavy';
+  src: url('/fonts/Chantilly-Heavy-Regular.woff2') format('woff2'),
+       url('/fonts/Chantilly-Heavy-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-chantilly {
+  font-family: 'Chantilly Heavy', sans-serif;
+}
+
+
+html, body {
+
+  margin: 0;
+  background: white;
+  color: #0000ff; /* Blue */
+  font-family: 'Reddit Mono', monospace;
+  height: 100%;
+  overflow: hidden;
 }
