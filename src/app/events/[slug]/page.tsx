@@ -23,16 +23,22 @@ export default async function EventPage(props: any) {
         [ BACK ]
       </Link>
 
-      {/* Centered Image */}
+      {/* Image row with horizontal scroll */}
       {event.image && (
-        <div className="relative w-full max-w-lg mb-4">
-          <Image
-            src={urlFor(event.image).width(800).url()!}
-            alt={event.name}
-            width={800}
-            height={600}
-            className="object-contain"
-          />
+        <div className="relative w-full mb-4 overflow-x-auto scroll-smooth">
+          <div className="flex gap-4 px-4">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="flex-shrink-0">
+                <Image
+                  src={urlFor(event.image).width(800).url()!}
+                  alt={event.name}
+                  width={800}
+                  height={600}
+                  className="object-contain"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
